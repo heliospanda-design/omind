@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="orb1a_bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4338CA"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="orb1a_ring" x1="10" y1="42" x2="54" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5B4FC" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#E0E7FF"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#orb1a_bg)"/>
+  <!-- Back half of orbit -->
+  <path d="M13.5 41.5C10.5 36 16.5 27.2 27.5 22.2C38.5 17.2 49.5 17.8 51.8 23" stroke="url(#orb1a_ring)" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- Core Roundtable O -->
+  <circle cx="32" cy="32" r="13.5" stroke="#FAF8F5" stroke-width="4.4"/>
+  <!-- Front half of orbit (true 3D spatial weave over the table ring) -->
+  <path d="M51.8 23C54.2 28.4 48 37.2 36.8 42.1C25.6 47 15.8 46.5 13.5 41.5" stroke="url(#orb1a_ring)" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- Human & PA Satellite Nodes -->
+  <circle cx="48.5" cy="21.5" r="4" fill="#FDE68A" stroke="#4338CA" stroke-width="1.6"/>
+  <circle cx="16" cy="42.5" r="3.4" fill="#6EE7B7" stroke="#4338CA" stroke-width="1.6"/>
+</svg>

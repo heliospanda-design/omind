@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omind — 一张白板，把想法聊成方案</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app" class="studio-app hidden">
+    <!-- Interactive Warm Editorial Canvas -->
+    <main id="studioViewport" class="studio-viewport view-freeform" aria-label="Omind 共享焦点桌面">
+      <div id="studioStage" class="studio-stage">
+        <!-- Concentric Gravity Orbits Layer (Mode 2 + 3 Obsidian Constellation) -->
+        <div id="constellationOrbitLayer" class="constellation-orbit-layer hidden" aria-hidden="true">
+          <div id="orbitRingOuter" class="constellation-orbit-ring orbit-outer">
+            <span class="constellation-orbit-badge outer">◌ 外环星云 · 边缘灵感 &amp; 弱语义关联</span>
+          </div>
+          <div id="orbitRingInner" class="constellation-orbit-ring orbit-inner">
+            <span class="constellation-orbit-badge inner">◎ 内环星轨 · 强因果推演 / 碰撞 / PA 佐证</span>
+          </div>
+          <div id="orbitRingCore" class="constellation-orbit-ring orbit-core">
+            <span class="constellation-orbit-badge core">✦ 中心引力核 · 焦点共识</span>
+          </div>
+        </div>
+
+        <!-- SVG Layer for 60fps Spring-Physics 3-Color Semantic Links, Implicit Weak Threads & Rubber-Band Preview -->
+        <svg id="linksSvgLayer" class="links-svg-layer" xmlns="http://www.w3.org/2000/svg">
+          <g id="weakLinksPathsGroup"></g>
+          <g id="linksPathsGroup"></g>
+          <path id="rubberPreviewPath" class="sem-rubber-preview hidden" />
+        </svg>
+
+        <!-- HTML Overlay for Compact Hover-Expand Link Action Capsules -->
+        <div id="linkCapsulesLayer" class="link-capsules-layer"></div>
+
+        <!-- Freeform & Cluster Cards Layer -->
+        <div id="deskCardsLayer" class="desk-cards-layer"></div>
+
+        <!-- Causal Flow View Layer -->
+        <div id="causalFlowLayer" class="causal-flow-layer hidden">
+          <svg id="causalEdgesSvg" class="causal-edges-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div id="causalNodesContainer" class="causal-nodes-container"></div>
+        </div>
+
+        <!-- Single-Line Horizontal Ambient Presence Cursors Layer -->
+        <div id="presenceCursorsLayer" class="presence-cursors-layer" aria-hidden="true"></div>
+
+        <!-- Spatial Micro-Cursors Burst Layer -->
+        <div id="microCursorsLayer" class="micro-cursors-layer"></div>
+      </div>
+
+      <!-- Direct Drag & Drop File/Image Overlay -->
+      <div id="canvasDropOverlay" class="canvas-drop-overlay hidden">
+        <div class="canvas-drop-card">
+          <span style="font-size:24px;">📎</span>
+          <span>松手直接贴到自由桌面上（图片生成拍立得卡 / 文本生成便签）</span>
+        </div>
+      </div>
+
+      <!-- 15-Second Empty Canvas Cold-Start Stepping Stone -->
+      <section id="coldStartCard" class="cold-start-card ceramic-panel hidden" aria-label="15 秒冷启动引导">
+        <div class="cold-start-badge">✨ 15 秒破冰垫脚石</div>
+        <h2 class="cold-start-title">
+          双击空白处直接写便签，按住 <kbd>Space</kbd> 说背景，或按 <kbd>⌘V</kbd> 粘贴链接、截图、上一场分享链接
+        </h2>
+        <p class="cold-start-sub">
+          收到首条内容后，AI 会在 3 秒内拆出 2–3 张起点卡铺到桌面，方便大家直接指着聊。
+        </p>
+        <div class="cold-start-actions">
+          <button id="coldStartVoiceBtn" type="button" class="btn btn-primary">🎙 按住或点击说背景</button>
+          <button id="coldStartPasteBtn" type="button" class="btn btn-subtle">📋 粘贴内容 / 前序链接</button>
+          <button id="coldStartMcpBtn" type="button" class="btn btn-subtle">🔌 复制本房 MCP 投递指令</button>
+        </div>
+        <div id="coldStartQuickTopics" class="cold-start-starters"></div>
+      </section>
+
+      <!-- Spatial Point-and-Talk Sonic Recording HUD -->
+      <div id="spatialVoiceHud" class="spatial-voice-hud ceramic-pill hidden" role="status" aria-live="polite">
+        <span class="sonic-dot"></span>
+        <span id="spatialVoiceLabel">🎙 正在针对卡片发言…</span>
+        <button id="spatialVoiceSimBtn" type="button" class="btn btn-xs btn-subtle">填入示例语音</button>
+        <button id="spatialVoiceSendBtn" type="button" class="btn btn-xs btn-primary">松开 / 发送</button>
+        <button id="spatialVoiceCancelBtn" type="button" class="btn btn-xs btn-ghost">取消</button>
+      </div>
+
+      <!-- Elastic Rubber-Band Link Mode Banner -->
+      <div id="linkingModeBanner" class="linking-banner ceramic-pill hidden">
+        <span id="linkingBannerText">🔗 移动鼠标预览弹性连线，点击目标卡片吸附连接…</span>
+        <button id="cancelLinkingBtn" type="button" class="btn btn-xs btn-ghost">取消 (Esc)</button>
+      </div>
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- ZERO-OVERLAP 3-COLUMN GRID TOP RAIL (Left / Center / Right)         -->
+    <!-- =================================================================== -->
+    <header class="hud-top-rail" aria-label="顶部协作导航栏">
+      <!-- COLUMN 1: LEFT BRAND + COMPACT ROOM MENU + GUIDE + HOST DIGEST ISLAND -->
+      <div id="hudTopLeft" class="rail-left">
+        <div class="ceramic-pill hud-row-pill rail-left-pill">
+          <button id="openWelcomeBtn" type="button" class="brand-btn" title="返回 Omind 首页 (/)">
+            <img src="/logo.svg" alt="Omind" class="brand-logo" />
+            <span class="brand-name">Omind</span>
+          </button>
+
+          <span class="pill-divider"></span>
+
+          <div class="popover-wrap min-w-0">
+            <button id="roomSwitchBtn" type="button" class="hud-btn min-w-0" title="切换桌面或重置案例">
+              <span id="presetBadgeEmoji">🌟</span>
+              <span id="roomTitleLabel" class="room-title-truncate">加载桌面中…</span>
+              <span class="caret">▾</span>
+            </button>
+            <div id="roomSwitchMenu" class="ceramic-popover hidden"></div>
+          </div>
+
+          <button id="quickNewRoomBtn" type="button" class="soft-icon-btn" title="新建预设圆桌桌面">＋</button>
+
+          <button id="resetStarterBtn" type="button" class="soft-icon-btn hidden" title="重置本新手引导案例至初始状态">↺</button>
+
+          <span class="pill-divider"></span>
+
+          <button id="startTourBtn" type="button" class="tour-pill-btn" title="开启 8 步全功能聚光灯聚焦引导">
+            🎯 引导
+          </button>
+        </div>
+
+        <!-- Host Real-Time Digest Dynamic Island (Hover Consensus -> Glow Source Cards!) -->
+        <button id="hostDigestPill" type="button" class="ceramic-pill host-digest-pill" title="点击展开 Host 实时脉络与共识梳理（悬停条目可高亮桌面源卡片）">
+          <span class="host-pulse-dot"></span>
+          <span id="hostDigestSummary">Host 梳理 · 0 脉络 / 0 共识</span>
+          <span class="host-digest-expand-label">展开 ▾</span>
+        </button>
+
+        <aside id="hostDigestPanel" class="ceramic-panel host-digest-panel hidden" aria-label="Host 实时梳理">
+          <div class="host-digest-head">
+            <span style="font-weight:700;font-size:12.5px;color:#1C1917;">✨ Host 实时梳理（悬停高亮源便签）</span>
+            <button id="closeHostDigestBtn" type="button" class="hud-btn hud-btn-sm" style="color:#78716C;">收起 −</button>
+          </div>
+          <div id="hostDigestBody" class="host-digest-body"></div>
+        </aside>
+
+        <div id="hostProactiveCard" class="host-proactive-card ceramic-panel hidden" role="region" aria-label="Host 主动建议"></div>
+      </div>
+
+      <!-- COLUMN 2: CENTER 3 PEER VIEWS + SUB-CONTROLS + LEGEND -->
+      <nav id="hudTopCenter" class="rail-center" aria-label="桌面视图模式">
+        <div id="viewTabsBar" class="ceramic-pill view-tabs" role="tablist">
+          <button id="tabFreeform" type="button" class="view-tab active" data-view="freeform" title="快捷键 1">
+            自由桌面
+          </button>
+          <button id="tabCluster" type="button" class="view-tab" data-view="cluster" title="快捷键 2">
+            整理归类
+          </button>
+          <button id="tabCausal" type="button" class="view-tab" data-view="causal" title="快捷键 3">
+            因果脉络
+            <span id="causalCountBadge" class="tiny-badge">0</span>
+          </button>
+        </div>
+
+        <div id="freeformSubControls" class="ceramic-pill sub-controls">
+          <button id="starLayoutBtn" type="button" class="toggle-chip" aria-pressed="false" title="一键把杂乱自由便签收拢为同心星轨 Obsidian 星座图（0 重叠）；关闭即还原自由位置">
+            <span id="starLayoutBtnLabel">🕸 星图组织</span>
+          </button>
+          <div id="starSubControls" class="star-sub-controls hidden" role="group" aria-label="星图引力模式">
+            <button id="starOrbitModeBtn" type="button" class="star-sub-btn active" title="方案 2+3 融合：三层向心引力同心星轨 + 发光星点">🪐 同心星轨</button>
+            <button id="starFreeCloudModeBtn" type="button" class="star-sub-btn" title="纯方案 2：无轨道自由力导向星云">🔮 自由星云</button>
+          </div>
+          <span class="pill-divider"></span>
+          <button id="microCursorToggleBtn" type="button" class="toggle-chip active" aria-pressed="true" title="显示或隐藏队友与 Host 的在场微光标">
+            ↖ 光标
+          </button>
+          <span class="pill-divider"></span>
+          <span class="sub-legend-inline" title="绿色=客观数据佐证 · 紫色=互补推导合成 · 橙色=观点分歧投票">
+            🟢佐证 🟣推导 🟠碰撞
+          </span>
+        </div>
+
+        <button id="staleBannerBtn" type="button" class="stale-alert-pill hidden">
+          ⚠️ 检测到上游决策变更，点击前往「因果脉络」复核修订提案
+        </button>
+      </nav>
+
+      <!-- COLUMN 3: RIGHT COLLAPSIBLE USER ROSTER & AGENT ROSTER -->
+      <div class="rail-right">
+        <!-- Row 1: Fixed Left-End Prominent Uncircled Arrow + User Seats + Pacing + Finalize -->
+        <div id="hudTopRightRow1" class="ceramic-pill hud-row-pill">
+          <button
+            id="toggleUsersListBtn"
+            type="button"
+            class="list-fold-chevron"
+            aria-expanded="true"
+            title="收起/展开参会成员列表"
+          >
+            <svg class="chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
+          </button>
+
+          <div id="usersExpandedWrap" class="collapsible-list-body">
+            <div id="seatCapsuleStrip" class="seat-capsule-strip" aria-label="参会成员与 PA 座席胶囊"></div>
+            <button id="joinSeatBtn" type="button" class="hud-btn hud-btn-sm" title="免注册选可爱头像入座">
+              + 入座
+            </button>
+          </div>
+
+          <button id="usersCollapsedSummary" type="button" class="collapsed-summary-btn hidden" title="点击展开参会成员与 PA 座席"></button>
+
+          <span id="pacingBadge" class="pacing-pill solo" title="单人起盘自动向桌面边缘落卡；多人在线自动切换为举手微气泡防刷屏">
+            智囊
+          </span>
+
+          <span class="pill-divider"></span>
+          <button id="finalizeBtn" type="button" class="btn-editorial-finalize" title="按拍板结论生成业务成品文档与 30 秒过程回放">
+            <span>✨ 收敛定稿</span>
+          </button>
+        </div>
+
+        <!-- Row 2: Fixed Left-End Prominent Uncircled Arrow + Draggable Agent Roles + MCP -->
+        <div id="hudTopRightRow2" class="rail-right-sub">
+          <div id="roleStripPill" class="ceramic-pill hud-row-pill role-strip-pill">
+            <button
+              id="toggleAgentsListBtn"
+              type="button"
+              class="list-fold-chevron"
+              aria-expanded="true"
+              title="收起/展开在席 Agent 角色列表"
+            >
+              <svg class="chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 6 15 12 9 18"></polyline>
+              </svg>
+            </button>
+
+            <div id="agentsExpandedWrap" class="collapsible-list-body">
+              <div id="publicRoleStrip" class="public-role-strip"></div>
+              <button id="configRolesBtn" type="button" class="hud-btn hud-btn-sm" title="开启/关闭思维与业务岗位角色（角色胶囊可直接拖到桌面卡片上评估）">
+                ⚙ 角色
+              </button>
+            </div>
+
+            <button id="agentsCollapsedSummary" type="button" class="collapsed-summary-btn hidden" title="点击展开全部在席 Agent 搭档"></button>
+
+            <span class="pill-divider"></span>
+            <button id="openMcpDrawerBtn" type="button" class="hud-btn hud-btn-mcp" title="配置外部 Cursor/Claude MCP 或在线调试 4 大工具">
+              🔌 MCP
+            </button>
+          </div>
+
+          <!-- Floating Hand-Raise Teaser Bubble -->
+          <div id="handRaiseBubbleSlot" class="hand-raise-bubble-slot"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- ZERO-OVERLAP UNIFIED BOTTOM DOCK (Mode B: Zoom + Shortcuts + Dock)  -->
+    <!-- =================================================================== -->
+    <div id="bottomDockRail" class="hud-bottom-rail">
+      <div id="creationDock" class="ceramic-pill unified-dock-pill">
+        <!-- Integrated Zoom & Shortcut Popover -->
+        <div class="dock-zoom-cluster">
+          <button id="zoomOutBtn" type="button" class="soft-icon-btn" title="缩小">−</button>
+          <span id="zoomPctLabel" class="zoom-pct">94%</span>
+          <button id="zoomInBtn" type="button" class="soft-icon-btn" title="放大">＋</button>
+          <button id="zoomFitBtn" type="button" class="hud-btn hud-btn-sm">居中</button>
+          <div class="shortcut-tip-wrap">
+            <button type="button" class="soft-icon-btn shortcut-icon-btn" aria-label="快捷手势一览">⌨️</button>
+            <div class="shortcut-hover-card ceramic-panel">
+              <div style="font-weight:700;color:#1C1917;margin-bottom:4px;">快捷手势一览</div>
+              <div>• <strong>双击空白桌面</strong>：原地新建便签</div>
+              <div>• <strong>悬停卡片 + <kbd>Space</kbd></strong>：空间锚定语音</div>
+              <div>• <strong><kbd>⌘V</kbd> / <kbd>Ctrl+V</kbd></strong>：秒贴截图或继承上场链接</div>
+              <div>• <strong>数字键 <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></strong>：切换三大画布视图</div>
+            </div>
+          </div>
+        </div>
+
+        <span class="pill-divider"></span>
+
+        <!-- Concise Tactile Creation & Vibe Controls -->
+        <div class="dock-creation-cluster">
+          <button id="dockAddStickyBtn" type="button" class="dock-btn dock-btn-warm" title="在桌面新建便签并原地打字（也可双击空白桌面）">🗒 便签</button>
+          <button id="dockVoiceStickyBtn" type="button" class="dock-btn" title="录一段语音自动转成桌面便签">🎙 语音</button>
+          <button id="dockAddLinkBtn" type="button" class="dock-btn" title="粘贴链接、文本或上一场会议分享链接">🔗 链接/继承</button>
+          <label class="dock-btn" title="上传或拖拽图片生成拍立得卡片">
+            🖼 拍立得
+            <input id="dockImageInput" type="file" accept="image/*" class="hidden" />
+          </label>
+          <button id="dockRandomSparkBtn" type="button" class="dock-btn dock-btn-mint" title="随机抛出一张讨论破局灵感便签">🎲 灵感</button>
+          <button id="dockAddConsensusBtn" type="button" class="dock-btn" title="记录一条共识或行动待办">⚖️ 共识</button>
+          <span class="pill-divider"></span>
+          <div class="vibe-cheer-group" aria-label="桌面氛围互动">
+            <button type="button" class="vibe-cheer-btn" data-vibe-emoji="🔥" title="赞同">🔥</button>
+            <button type="button" class="vibe-cheer-btn" data-vibe-emoji="💡" title="有启发">💡</button>
+            <button type="button" class="vibe-cheer-btn" data-vibe-emoji="🎉" title="撒花庆祝">🎉</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM-RIGHT HUD: Clean 306px Collapsible Editorial Air Stream Pod -->
+    <aside id="airStreamPanel" class="air-pod ceramic-panel" aria-label="空气层对讲流">
+      <div class="air-top-bar">
+        <div class="air-brand-left">
+          <span class="led-indicator"></span>
+          <span class="air-title">对讲流 · @召唤 Agent</span>
+        </div>
+        <div class="air-top-right">
+          <span class="air-hint">重点可 📌 贴上桌</span>
+          <button id="toggleAirStreamBtn" type="button" class="soft-icon-btn" title="收起对讲流释放右侧画布">−</button>
+        </div>
+      </div>
+
+      <div id="airMessagesList" class="air-messages-list"></div>
+
+      <!-- Waveform PTT Recording Strip -->
+      <div id="pttRecordingBar" class="ptt-recording-bar hidden">
+        <div class="waveform-bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <span id="pttStatusText" class="ptt-status-text">正在聆听…</span>
+        <button id="pttSimFillBtn" type="button" class="btn btn-xs btn-subtle">示例语音</button>
+        <button id="pttFinishBtn" type="button" class="btn btn-xs btn-primary">发送</button>
+      </div>
+
+      <!-- Cleanly Separated Editorial Composer (Zero Text Overlap!) -->
+      <div class="air-composer">
+        <div id="mentionChipsRow" class="mention-chips-row"></div>
+        <div class="air-input-row">
+          <div class="air-text-wrap">
+            <textarea
+              id="airInput"
+              rows="2"
+              placeholder="写观点，或点上方 @spark 召唤…"
+            ></textarea>
+            <div class="air-mini-actions">
+              <button id="quickMentionBtn" type="button" class="micro-chip-btn">@召唤</button>
+              <button id="sendAirMsgBtn" type="button" class="send-pill-btn">发送 ↑</button>
+            </div>
+          </div>
+
+          <button id="pttMicBtn" type="button" class="editorial-mic-btn" title="点击或按住录语音条">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+              <path d="M5 10a7 7 0 0 0 14 0"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <button id="airStreamCollapsedBtn" type="button" class="air-collapsed-pill ceramic-pill hidden">
+      <span class="led-indicator"></span>
+      <span>对讲流 · @召唤</span>
+      <span id="airUnreadCount" class="tiny-badge">0</span>
+    </button>
+
+    <!-- TRANSLUCENT SPOTLIGHT CUTOUT ONBOARDING LAYER (8-Step Full-Feature Tour) -->
+    <div id="spotlightHole" class="spotlight-hole hidden" aria-hidden="true"></div>
+    <aside id="spotlightPopover" class="spotlight-popover hidden" role="dialog" aria-live="polite"></aside>
+  </div>
+
+  <!-- Home 1: Prompt-First Conversational Launchpad -->
+  <div id="welcomeStudioOverlay" class="home-launchpad-overlay hidden" role="dialog" aria-modal="true" aria-label="Omind 首页"></div>
+
+  <!-- 3-Preset Room Launcher Overlay -->
+  <div id="launcherOverlay" class="fullscreen-overlay hidden" role="dialog" aria-modal="true" aria-label="新建预设圆桌会议室"></div>
+
+  <!-- Share Deliverable & 30-Second Replay Overlay -->
+  <div id="shareOverlay" class="fullscreen-overlay hidden" role="dialog" aria-modal="true" aria-label="定稿业务成品与 30 秒过程回放"></div>
+
+  <!-- Confetti Celebration Layer -->
+  <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+  <!-- Right-Side MCP & Seat Inspector Drawer -->
+  <aside id="sideDrawer" class="side-drawer ceramic-panel hidden" aria-label="MCP 连接器与座席抽屉"></aside>
+
+  <!-- Generic Center Modal -->
+  <div id="modalBackdrop" class="modal-backdrop hidden"></div>
+  <div id="centerModal" class="center-modal ceramic-panel hidden" role="dialog" aria-modal="true"></div>
+
+  <!-- Subtle Status Toast -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Dependencies & Runtime Data
+node_modules/
+data/
+.wrangler/
+
+# Local Environment Secrets
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+*.log

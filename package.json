@@ -1,0 +1,16 @@
+{
+  "name": "omind",
+  "version": "5.4.0",
+  "description": "Omind v5.4 — 一张白板，把想法聊成方案 · 半异步圆桌会议室（1-Room-1-DO + 同心星轨 Obsidian 星图组织 + 双层 Agent 与 MCP 连接器）",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev": "node --watch src/server.mjs",
+    "test": "node --test tests/omind.test.mjs",
+    "deploy": "npx wrangler deploy",
+    "reset-db": "node -e \"import('node:fs').then(fs => fs.rmSync('data', { recursive: true, force: true }))\" && echo 'v5 room databases reset complete.'"
+  }
+}
